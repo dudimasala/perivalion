@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 
-import { Task } from "./models/Task";
+import { Item } from "./models/Item";
 import { TaskRealmContext } from "./models";
 import { TaskManager } from "./components/TaskManager";
 
 const { useQuery } = TaskRealmContext;
 
-export const AppNonSync = () => {
-  const result = useQuery(Task);
+export const App = () => {
+  const result = useQuery(Item);
 
   const tasks = useMemo(() => result.sorted("createdAt"), [result]);
 

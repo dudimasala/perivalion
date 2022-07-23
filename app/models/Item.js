@@ -1,5 +1,5 @@
 import { Realm } from "@realm/react";
-export class Task extends Realm.Object {
+export class Item extends Realm.Object {
   static generate(description, userId) {
     return {
       _id: new Realm.BSON.ObjectId(),
@@ -12,7 +12,7 @@ export class Task extends Realm.Object {
 
   // To use a class as a Realm object type, define the object schema on the static property "schema".
   static schema = {
-    name: "Task",
+    name: "Item",
     primaryKey: "_id",
     properties: {
       _id: "objectId",

@@ -1,23 +1,56 @@
 import React, { useCallback, useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
-import { Task } from "../models/Task";
 import { TaskRealmContext } from "../models";
-import { IntroText } from "./IntroText";
-import { AddTaskForm } from "./AddTaskForm";
-import TaskList from "./TaskList";
 import * as Location from 'expo-location';
+import binAddresses from "./binAddresses";
+import BinView from "./BinView";
+import Geocoder from "react-native-geocoding";
 
-//make it so that it updstes location as the user moves.
 
-const { useRealm } = TaskRealmContext;
+//make it so that it updates location as the user moves.
+
+const {useRealm, useQuery, useObject} = TaskRealmContext;
 
 export const TaskManager = ({ tasks, userId }) => {
   const realm = useRealm();
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
   
+  const items = useQuery("Bin");
+/*
+  if(items.length !== 0) {
+    realm.write(() => {
+      realm.deleteAll();
+    })
+  } 
+*/
+  //1 time only, initialises the database for bins. Pulls from binAddresses.js
+  //gets coordinates of all addresses using geocoder (Google API)
+  //Then adds address + coords to our database
+  if(items.length === 0) {
+    Geocoder.init("AIzaSyALD0YncwoJ6nHW6MkL5J385Kr7s_RSfu4");
+    for(let i = 0; i < binAddresses.length; i++) {
+      Geocoder.from(binAddresses[i])
+      .then(json => {
+        var location = json.results[0].geometry.location;
+        realm.write(() => {
+          realm.create("Bin", {_id: new Realm.BSON.ObjectId(), address: binAddresses[i], lat: location.lat, lng: location.lng})
+        })
+      })  
+      .catch(error => console.warn(error));    
+    }
+  }
+
+
+  const nItems = useQuery("Bin");
+  console.log(nItems);
+  //for whether user wants to walk or drive
+  const [walking, setWalking] = useState(true);
+
+  //in case user denies permission
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  //to set the region of the map and also place the user's pin (triangulated around their location)
   const [mapRegion, setmapRegion] = useState({
       latitude: 37.78825,
       longitude: -122.4324,
@@ -25,93 +58,110 @@ export const TaskManager = ({ tasks, userId }) => {
       longitudeDelta: 0.0421
   });
 
+
   useEffect(() => {
     (async () => {
+
+      //ask the users for location permission (one time only)
       let { status } = await  Location.requestForegroundPermissionsAsync();
      if (status !== 'granted') {
         console.log('denied');
         setErrorMsg('Permission to access location was denied');
         return;
      } else {
+       //gets the users current position --> places a marker there later
        let location = await Location.getCurrentPositionAsync({});
-       setLocation(location);
        setmapRegion({
          latitude: location.coords.latitude,
          longitude: location.coords.longitude,
          latitudeDelta: 0.0222,
          longitudeDelta: 0.0221
        })
+
+       //determining the closest 5 recycling bins to the user:
+       //get the addresses of all the bins
+       //find the time from all the bins to the users location
+       //sort the findings
+
+
+
      }
     
     })();
   }, []);
 
+  //if the walk/drive button is pressed, to toggle the state accordingly
 
-/*
-  const handleAddTask = useCallback(
-    (description) => {
-      if (!description) {
-        return;
-      }
+  function toggleWalk() {
+    setWalking(!walking);
+  }
 
-      // Everything in the function passed to "realm.write" is a transaction and will
-      // hence succeed or fail together. A transcation is the smallest unit of transfer
-      // in Realm so we want to be mindful of how much we put into one single transaction
-      // and split them up if appropriate (more commonly seen server side). Since clients
-      // may occasionally be online during short time spans we want to increase the probability
-      // of sync participants to successfully sync everything in the transaction, otherwise
-      // no changes propagate and the transaction needs to start over when connectivity allows.
-      realm.write(() => {
-        realm.create("Task", Task.generate(description, userId));
-      });
-    },
-    [realm, userId],
-  );
 
-  const handleToggleTaskStatus = useCallback(
-    (task) => {
-      realm.write(() => {
-        // Normally when updating a record in a NoSQL or SQL database, we have to type
-        // a statement that will later be interpreted and used as instructions for how
-        // to update the record. But in RealmDB, the objects are "live" because they are
-        // actually referencing the object's location in memory on the device (memory mapping).
-        // So rather than typing a statement, we modify the object directly by changing
-        // the property values. If the changes adhere to the schema, Realm will accept
-        // this new version of the object and wherever this object is being referenced
-        // locally will also see the changes "live".
-        task.isComplete = !task.isComplete;
-      });
-
-      // Alternatively if passing the ID as the argument to handleToggleTaskStatus:
-      // realm?.write(() => {
-      //   const task = realm?.objectForPrimaryKey('Task', id); // If the ID is passed as an ObjectId
-      //   const task = realm?.objectForPrimaryKey('Task', Realm.BSON.ObjectId(id));  // If the ID is passed as a string
-      //   task.isComplete = !task.isComplete;
-      // });
-    },
-    [realm],
-  );
-
-  const handleDeleteTask = useCallback(
-    (task) => {
-      realm.write(() => {
-        realm.delete(task);
-
-        // Alternatively if passing the ID as the argument to handleDeleteTask:
-        // realm?.delete(realm?.objectForPrimaryKey('Task', id));
-      });
-    },
-    [realm],
-  );
-*/
   return (
     <View style={styles.content}>
       <MapView
-        style={{ alignSelf: 'stretch', height: '100%' }}
+        style={{ alignSelf: 'stretch', height: '50%' }}
         region={mapRegion}
       >
         <Marker pinColor="green" coordinate={mapRegion} title='Your location'></Marker>
       </MapView>
+      <ScrollView style={styles.bottomView}>
+        <View style={styles.buttonView}>
+          {
+            walking ? 
+            <Pressable style={[styles.button, styles.selected]} onPress={toggleWalk}><Text style={styles.buttonText}>Walk</Text></Pressable>
+            :
+            <Pressable style={[styles.button]} onPress={toggleWalk}><Text style={styles.buttonText}>Walk</Text></Pressable>
+          }
+          {
+            walking ?
+            <Pressable style={styles.button} onPress={toggleWalk}><Text style={styles.buttonText}>Drive</Text></Pressable>
+            :
+            <Pressable style={[styles.button, styles.selected]} onPress={toggleWalk}><Text style={styles.buttonText}>Drive</Text></Pressable>
+          }
+        </View>
+        <View style={styles.descriptorView}><Text style={styles.descriptor}>The 5 Closest Bins To You:</Text></View>
+        <BinView 
+          blue={true} 
+          rank={1} 
+          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
+          distance={"5km"}
+          time={1}
+          units={"min"}
+        />
+        <BinView 
+          blue={false} 
+          rank={2} 
+          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
+          distance={"10km"}
+          time={3}
+          units={"mins"}
+        />
+        <BinView 
+          blue={true} 
+          rank={3} 
+          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
+          distance={"12km"}
+          time={5}
+          units={"mins"}
+        />
+        <BinView 
+          blue={false} 
+          rank={4} 
+          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
+          distance={"15km"}
+          time={10}
+          units={"mins"}
+        />
+        <BinView 
+          blue={true} 
+          rank={5} 
+          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
+          distance={"20km"}
+          time={20}
+          units={"mins"}        
+        />
+      </ScrollView>
     </View>
   );
 };
@@ -120,4 +170,43 @@ const styles = StyleSheet.create({
   content: {
     flex: 1
   },
+  bottomView: {
+    backgroundColor: "#0E152B",
+    height: "50%",
+  },
+
+  buttonView: {
+    flexDirection: "row"
+  },
+
+  button: {
+    backgroundColor: "#25AA72",
+    borderColor: "black",
+    borderWidth: 1,
+    borderRadius: 2,
+    paddingTop: "2%",
+    paddingBottom: "2%",
+    paddingLeft: "1%",
+    paddingRight: "1%",
+    width: "50%",
+    textAlign: "center"
+  },
+  buttonText: {
+    textAlign: "center"
+  },
+  selected: {
+    opacity: 0.5
+  },
+  descriptorView: {
+    width: "100%",
+    backgroundColor: "#232630"
+  },
+  descriptor: {
+    fontFamily: "arial",
+    color: "white",
+    paddingTop: "2%",
+    paddingBottom: "2%",
+    fontSize: 20,
+    textAlign: "center"
+  }
 });
