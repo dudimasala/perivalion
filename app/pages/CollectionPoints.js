@@ -222,7 +222,7 @@ export const CollectionPoints = () => {
             <Pressable style={[styles.button, styles.selected]} onPress={toggleMode}><Text style={styles.buttonText}>Drive</Text></Pressable>
           }
         </View>
-        <View style={styles.descriptorView}><Text style={styles.descriptor}>The 5 Closest Bins To You:</Text></View>
+        <View style={styles.descriptorView}><Text style={styles.descriptor}>5 Nearest Recycling Points</Text></View>
         <BinView 
           blue={true} 
           rank={1} 

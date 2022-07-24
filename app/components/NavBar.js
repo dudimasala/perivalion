@@ -13,17 +13,16 @@ const windowHeight = Dimensions.get('window').height;
 
 
 const NavBar = (props) => {
-    const [curr, setCurr] = useState('home');
     const color = (icon) => {
         switch (icon) {
             case 'nav':
-                if (curr === 'nav') {
+                if (props.currPage === 'nav') {
                     return '#25aa72'
                 } else {
                     return '#c4c4c4'
                 }
             case 'home':
-                if (curr === 'home') {
+                if (props.currPage === 'home') {
                     return '#25aa72'
                 } else {
                     return '#c4c4c4'
@@ -31,7 +30,6 @@ const NavBar = (props) => {
         }
     }
     const changePage = (newPage) => {
-        setCurr(newPage)
         props.setCurrView(newPage)
     }
     return (

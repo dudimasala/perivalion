@@ -14,10 +14,10 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.main}>
-        {currPage === 'nav' ? <CollectionPoints /> : <Home />}
+        {currPage === 'nav' ? <CollectionPoints /> : <Home recycle={changePage} />}
       </View>
       <View style={styles.navbar}>
-        <NavBar setCurrView={changePage} />
+        <NavBar setCurrView={changePage} currPage={currPage} />
       </View>
     </View>
   );

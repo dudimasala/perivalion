@@ -23,7 +23,7 @@ import PerivalionLogo from '../../assets/PerivalionLOGO.png'
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const Home = () => {
+const Home = (props) => {
     const [isModalVisible, setModalVisible] = useState(false);
     //make sure recyclingItems array always only has 3 items, each an object
     const [recyclingItems, setRecyclingItems] = useState([{ image: COLA, name: 'Coca Cola Can', type: 'metal' }, { image: CAPSULES, name: 'Nestle Capsules', type: 'metal' }, { image: ALUMINIUM, name: 'Aluminium Plates', type: 'metal' }]);
@@ -36,7 +36,7 @@ const Home = () => {
         setModalVisible(!isModalVisible);
     };
     return (
-        <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.header}>
                 <Text style={{
                     color: 'white',
@@ -48,7 +48,6 @@ const Home = () => {
 
             <SearchBar
                 placeholder="Your item"
-                onPress={() => alert("onPress")}
                 onChangeText={(text) => console.log(text)}
             />
 
@@ -71,7 +70,7 @@ const Home = () => {
                     padding: windowWidth / 25,
                     fontWeight: '900'
                 }}>
-                    ...
+        
                 </Text>
             </View>
             {/* <Carousel toggleModal={toggleModal} /> */}
@@ -138,9 +137,11 @@ const Home = () => {
                     <View style={{ paddingTop: windowHeight / 15 }}>
                         <LongBtnPlain text='FEEDBACK' />
                     </View>
-                    <View style={{ padding: windowHeight / 30 }}>
+                    <TouchableOpacity onPress={() => (props.recycle('nav'))}>
+                      <View style={{ padding: windowHeight / 30 }}>
                         <LongBtn text='RECYCLE' />
-                    </View>
+                      </View>
+                    </TouchableOpacity>
 
                 </View>
             </Modal>
@@ -157,7 +158,7 @@ const Home = () => {
                     padding: windowWidth / 25,
                     fontWeight: '900'
                 }}>
-                    ...
+    
                 </Text>
             </View>
             <View>
@@ -186,7 +187,7 @@ const Home = () => {
 
                 </View>
             </View>
-        </SafeAreaView>
+        </ScrollView>
     )
 }
 
@@ -211,6 +212,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         color: 'white',
         fontSize: 20,
+        paddingLeft: windowWidth / 15,
         alignItems: 'center'
     },
     menuText: {
