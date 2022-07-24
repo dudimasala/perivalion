@@ -1,4 +1,6 @@
 //Schema for storing bin coordinates
+
+//Called Bin.js but this is now extended to recycling points in Hong Kong
 import { Realm } from "@realm/react";
 export class Bin extends Realm.Object {
     // To use a class as a Realm object type, define the object schema on the static property "schema".

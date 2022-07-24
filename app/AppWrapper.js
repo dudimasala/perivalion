@@ -3,7 +3,7 @@ import { SafeAreaView, StyleSheet } from "react-native";
 
 import { TaskRealmContext } from "./models";
 import colors from "./styles/colors";
-import { App } from "./App";
+import App from "./App";
 
 export const AppWrapper = () => {
   const { RealmProvider } = TaskRealmContext;

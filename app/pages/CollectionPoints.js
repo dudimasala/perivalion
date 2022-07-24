@@ -4,11 +4,13 @@ import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
 import { TaskRealmContext } from "../models";
 import * as Location from 'expo-location';
-import binAddresses from "./binAddresses";
-import BinView from "./BinView";
+import binAddresses from "../components/binAddresses";
+import BinView from "../components/BinView";
 import Geocoder from "react-native-geocoding";
 var axios = require("axios");
 var mongoose = require('mongoose');
+
+//now includes recycling collection points in Hong Kong
 
 //for the private API key
 import environmentalVariables from "../../env";
@@ -19,7 +21,7 @@ import environmentalVariables from "../../env";
 const {useRealm, useQuery } = TaskRealmContext;
 
 
-export const TaskManager = ({ tasks, userId }) => {
+export const CollectionPoints = () => {
   
   const realm = useRealm();
   

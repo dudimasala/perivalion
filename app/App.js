@@ -1,15 +1,40 @@
-import React, { useMemo } from "react";
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View } from 'react-native';
+import LongBtn from './components/LongBtn';
+import NavBar from './components/NavBar';
+import Home from './pages/Home';
+import { CollectionPoints } from './pages/CollectionPoints'
+import { useState } from 'react';
 
-import { Item } from "./models/Item";
-import { TaskRealmContext } from "./models";
-import { TaskManager } from "./components/TaskManager";
+export default function App() {
+  const [currPage, setCurrPage] = useState('home');
+  const changePage = (newPage) => {
+    setCurrPage(newPage);
+  }
+  return (
+    <View style={styles.container}>
+      <View style={styles.main}>
+        {currPage === 'nav' ? <CollectionPoints /> : <Home />}
+      </View>
+      <View style={styles.navbar}>
+        <NavBar setCurrView={changePage} />
+      </View>
+    </View>
+  );
+}
 
-const { useQuery } = TaskRealmContext;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0e152b',
+    alignItems: 'center',
+    justifyContent: 'center',
 
-export const App = () => {
-  const result = useQuery(Item);
 
-  const tasks = useMemo(() => result.sorted("createdAt"), [result]);
-
-  return <TaskManager tasks={tasks} />;
-};
+  },
+  navbar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0
+  },
+});

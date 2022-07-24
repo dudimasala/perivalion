@@ -376,6 +376,8 @@ PODS:
   - RealmJS (10.19.5):
     - GCDWebServer
     - React
+  - RNVectorIcons (9.2.0):
+    - React-Core
   - UMTaskManagerInterface (7.1.1):
     - ExpoModulesCore
   - Yoga (1.14.0)
@@ -431,6 +433,7 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RealmJS (from `../node_modules/realm`)
+  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - UMTaskManagerInterface (from `../node_modules/unimodules-task-manager-interface/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -536,6 +539,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RealmJS:
     :path: "../node_modules/realm"
+  RNVectorIcons:
+    :path: "../node_modules/react-native-vector-icons"
   UMTaskManagerInterface:
     :path: "../node_modules/unimodules-task-manager-interface/ios"
   Yoga:
@@ -592,6 +597,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 493d9abb8b23c3f84e19ae221eeba92cadcb70dc
   ReactCommon: 8fea6422328e2fc093e25c9fac67adbcf0f04fb4
   RealmJS: 400aac2267a47b25fcc2b6321e8a419282719d16
+  RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   UMTaskManagerInterface: 3184c93ecc290bd422c6e344badc89b601e9c29b
   Yoga: e6ecf3fa25af9d4c87e94ad7d5d292eedef49749
 
