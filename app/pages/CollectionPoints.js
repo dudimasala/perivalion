@@ -9,7 +9,6 @@ import BinView from "../components/BinView";
 import Geocoder from "react-native-geocoding";
 var axios = require("axios");
 var mongoose = require('mongoose');
-//now includes recycling collection points in Hong Kong
 
 //for the private API key
 import environmentalVariables from "../../env";
@@ -20,11 +19,10 @@ import environmentalVariables from "../../env";
 const {useRealm, useQuery } = TaskRealmContext;
 
 
-export const CollectionPoints = () => {
+export const CollectionPoints = ({ tasks, userId }) => {
   
   const realm = useRealm();
   
-
   //for whether user wants to walk or drive
   const [mode, setMode] = useState("walking");
 
@@ -39,7 +37,10 @@ export const CollectionPoints = () => {
   //to stop an infinite loop for finding the closest 5 bins
   const [loaded, setLoaded] = useState(false);
 
-/*
+  const [loadedItems, setLoadedItems]=useState(false);
+
+  const items = useQuery("Bin");
+  /*
   if(items.length !== 0) {
     realm.write(() => {
       realm.deleteAll();
@@ -49,8 +50,9 @@ export const CollectionPoints = () => {
   //1 time only, initialises the database for bins. Pulls from binAddresses.js
   //gets coordinates of all addresses using geocoder (Google API)
   //Then adds address + coords to our database
-  const items = useQuery("Bin");
-  if(items.length === 0) {
+  
+  if(items.length === 0 && !loadedItems) {
+    setLoadedItems(true);
     Geocoder.init(environmentalVariables.GOOGLE_API_KEY);
     for(let i = 0; i < binAddresses.length; i++) {
       Geocoder.from(binAddresses[i])
@@ -62,10 +64,11 @@ export const CollectionPoints = () => {
       })  
       .catch(error => console.warn(error));    
     }
-  }
+  } 
+  
   
   const bins = useQuery("Bin");
-
+  console.log(bins.length);
 
       //determining the closest 5 recycling bins to the user:
       //get the addresses of all the bins
@@ -86,7 +89,6 @@ export const CollectionPoints = () => {
         url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${mapRegion.latitude}%2C${mapRegion.longitude}&destinations=${bins[i].lat}%2C${bins[i].lng}&mode=${mode}&units=imperial&key=${environmentalVariables.GOOGLE_API_KEY}`,
         headers: { }
       };
-      
       axios(config)
       .then(function (response) {
         travelTimes[bins[i]._id] = response.data.rows[0].elements[0].duration.value;
@@ -222,7 +224,7 @@ export const CollectionPoints = () => {
             <Pressable style={[styles.button, styles.selected]} onPress={toggleMode}><Text style={styles.buttonText}>Drive</Text></Pressable>
           }
         </View>
-        <View style={styles.descriptorView}><Text style={styles.descriptor}>5 Nearest Recycling Points</Text></View>
+        <View style={styles.descriptorView}><Text style={styles.descriptor}>The 5 Closest Bins To You:</Text></View>
         <BinView 
           blue={true} 
           rank={1} 

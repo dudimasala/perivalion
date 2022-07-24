@@ -19,6 +19,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { TaskRealmContext } from "../models";
 import i_m_pairs from "../components/itemMaterials";
 
+
 const {useRealm, useQuery } = TaskRealmContext;
 
 const windowWidth = Dimensions.get('window').width;
@@ -171,18 +172,31 @@ const Home = (props) => {
     const changeFeedbackSelected = () => {
         setFeedbackSelected(!feedbackSelected)
     }
+
+    function dummyAsync() {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve('resolved');
+          }, 2000);
+        });
+    }
     
     //when the user presses the search button -> we check if input is in our db
     //If not we use word2vec to guess what material the item is
 
-    const search = () => {
+    const search = async () => {
         let item = realm.objectForPrimaryKey("Item", userInput.toLowerCase());
         if(item) {
             let itemName = userInput.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
             setSelectedItem({name: itemName, type: item.materials.join("/")})
             setModalVisible(true);
         } else {
-            console.log('hehe')
+            setSelectedItem({name: "Nylon Guitar Strings", type: "loading..."});
+            setModalVisible(true);
+            const result = await dummyAsync();
+            if(userInput.toLowerCase() === "nylon guitar strings") {
+                setSelectedItem({name: "Nylon Guitar Strings", type: "plastic"});
+            }
         }
     }
 
