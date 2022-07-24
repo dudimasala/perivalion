@@ -191,11 +191,11 @@ const Home = (props) => {
             setSelectedItem({name: itemName, type: item.materials.join("/")})
             setModalVisible(true);
         } else {
-            setSelectedItem({name: "Nylon Guitar Strings", type: "loading..."});
+            setSelectedItem({name: "Guitar Strings", type: "loading..."});
             setModalVisible(true);
             const result = await dummyAsync();
-            if(userInput.toLowerCase() === "nylon guitar strings") {
-                setSelectedItem({name: "Nylon Guitar Strings", type: "plastic"});
+            if(userInput.toLowerCase() === "guitar strings") {
+                setSelectedItem({name: "Guitar Strings", type: "plastic"});
             }
         }
     }

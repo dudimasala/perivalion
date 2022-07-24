@@ -81,6 +81,7 @@ export const CollectionPoints = ({ tasks, userId }) => {
   //Use that to create a dictionary, -> find the five lowest time values and then store the bins, the time, and the distance of the closest 5
 
   if(mapRegion !== null && loaded === false) {
+    setLoaded(true);
     let travelTimes = {};
     let completeData = {};
     for(let i = 0; i < bins.length; i++) {
@@ -105,7 +106,6 @@ export const CollectionPoints = ({ tasks, userId }) => {
             keys.splice(index, 1);
           }  
           setClosestFive(lowestIds);
-          setLoaded(true);
         }
       })
       .catch(function (error) {
@@ -135,8 +135,8 @@ export const CollectionPoints = ({ tasks, userId }) => {
        setmapRegion({
          latitude: location.coords.latitude,
          longitude: location.coords.longitude,
-         latitudeDelta: 0.2222,
-         longitudeDelta: 0.2221
+         latitudeDelta: 0.0622,
+         longitudeDelta: 0.0621
        });
        setLoaded(false);
 
