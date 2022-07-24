@@ -25,7 +25,7 @@ export const CollectionPoints = () => {
   
   const realm = useRealm();
   
-  const items = useQuery("Bin");
+
   //for whether user wants to walk or drive
   const [mode, setMode] = useState("walking");
 
@@ -50,6 +50,7 @@ export const CollectionPoints = () => {
   //1 time only, initialises the database for bins. Pulls from binAddresses.js
   //gets coordinates of all addresses using geocoder (Google API)
   //Then adds address + coords to our database
+  const items = useQuery("Bin");
   if(items.length === 0) {
     Geocoder.init(environmentalVariables.GOOGLE_API_KEY);
     for(let i = 0; i < binAddresses.length; i++) {

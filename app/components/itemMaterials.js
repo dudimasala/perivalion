@@ -1,6 +1,9 @@
 //metal, paper, glass, plastic, non-recyclable, clothing, food
 //Item material pairs
 let i_m_pairs = {
+  "coca cola can": ["metal"],
+  "coffee capsule": ['plastic'],
+  "aluminium plate": ["metal"],
   "aerosol can": ["metal"],
   "foil": ["metal"],
   "tray": ["metal","plastic"],
@@ -10,6 +13,7 @@ let i_m_pairs = {
   "nappies": ["non-recyclable"],
   "baby wipe": ["non-recyclable"],
   "baking tray": ["metal", "plastic"],
+  "water bottle": ["metal", "plastic"],
   "sponge": ["non-recyclable"],
   "battery": ["metal"],
   "belt": ["metal"],
@@ -84,7 +88,7 @@ let i_m_pairs = {
   "fruit": ["food"],
   "vegetable": ["food"],
   "food waste": ["food"],
-  "chair": ["metal", "plastic", "wood"]
+  "chair": ["metal", "plastic", "wood"],
   "table": ['metal', 'plastic','wood'],
   "furniture": ["metal", "plastic", "wood"],
   "bottle": ["metal", "glass"],
@@ -171,7 +175,6 @@ let i_m_pairs = {
   "toothpaste tube": ["non-recyclable"],
   "wallpaper": ["non-recyclable"],
   "washing powder bottle": ["plastic"],
-  "coffee capsule": ['plastic'],
   "wet wipe": ["non-recylable"],
   "watches": ["metal"],
   "yoghurt tub": ["plastic"]

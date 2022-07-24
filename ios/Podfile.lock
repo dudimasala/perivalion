@@ -100,6 +100,8 @@ PODS:
     - EXUpdatesInterface
     - React-Core
   - EXUpdatesInterface (0.5.2)
+  - EXWebBrowser (10.1.1):
+    - ExpoModulesCore
   - FBLazyVector (0.64.3)
   - FBReactNativeSpec (0.64.3):
     - RCT-Folly (= 2020.01.13.00)
@@ -402,6 +404,7 @@ DEPENDENCIES:
   - EXStructuredHeaders (from `../node_modules/expo-structured-headers/ios`)
   - EXUpdates (from `../node_modules/expo-updates/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
+  - EXWebBrowser (from `../node_modules/expo-web-browser/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
@@ -481,6 +484,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-updates/ios"
   EXUpdatesInterface:
     :path: "../node_modules/expo-updates-interface/ios"
+  EXWebBrowser:
+    :path: "../node_modules/expo-web-browser/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
@@ -567,6 +572,7 @@ SPEC CHECKSUMS:
   EXStructuredHeaders: 4993087b2010dbcc510f5d92555b36f523425e8d
   EXUpdates: a83e036243b0f6ece53a8c1cb883b6751c88a5f8
   EXUpdatesInterface: 13270752afb8c61f83a09117e6b04a682b2db9eb
+  EXWebBrowser: f1573262c5de753987ed526c630076eda130804d
   FBLazyVector: c71c5917ec0ad2de41d5d06a5855f6d5eda06971
   FBReactNativeSpec: 5e72365fc9e8b61ec0d59e77f8184f6c3e7cadda
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4

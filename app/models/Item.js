@@ -1,25 +1,11 @@
 import { Realm } from "@realm/react";
 export class Item extends Realm.Object {
-  static generate(description, userId) {
-    return {
-      _id: new Realm.BSON.ObjectId(),
-      description,
-      isComplete: false,
-      createdAt: new Date(),
-      userId: userId || "_SYNC_DISABLED_",
-    };
-  }
-
-  // To use a class as a Realm object type, define the object schema on the static property "schema".
   static schema = {
     name: "Item",
-    primaryKey: "_id",
+    primaryKey: "item",
     properties: {
-      _id: "objectId",
-      description: "string",
-      isComplete: { type: "bool", default: false },
-      createdAt: "date",
-      userId: "string",
+      item: "string",
+      materials: "string[]"
     },
   };
 }
