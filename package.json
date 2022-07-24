@@ -7,13 +7,16 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "@react-google-maps/api": "^2.12.1",
     "@realm/react": "^0.3.1",
+    "axios": "^0.27.2",
     "expo": "^44.0.6",
     "expo-dev-client": "~0.8.4",
     "expo-location": "~14.0.1",
     "expo-splash-screen": "~0.14.2",
     "expo-status-bar": "~1.2.0",
     "expo-updates": "~0.11.6",
+    "mongoose": "^6.4.6",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-native": "0.64.3",

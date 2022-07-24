@@ -3,6 +3,27 @@ import { View, Text, StyleSheet } from "react-native";
 
 
 export default function BinView(props) {
+    //based on number of seconds, determine what time unit should be displayed (minutes, hours, or days)
+    let days = Math.floor(props.seconds / 86400);
+    let time = 0;
+    let units = "";
+    if(days >= 1) {
+      time = days;
+      units = "day"
+    } else {
+        let hours = Math.floor(props.seconds / 3600);
+        if(hours >= 1) {
+            time = hours;
+            units = "hour";
+        } else {
+            time = Math.floor(props.seconds / 60);
+            units = "min"
+        }
+    }
+    if(time > 1) {
+        units += "s";
+    }
+
     if(props.blue) {
         return (
             <View style={styles.binView1}>
@@ -11,11 +32,11 @@ export default function BinView(props) {
               </View>
               <View style={styles.binViewCenter}>
                 <Text style={styles.address}>{props.address}</Text>
-                <Text style={styles.distance}>{`${props.distance} Away`}</Text>
+                <Text style={styles.distance}>{`${props.distance} away`}</Text>
               </View>
               <View style={styles.binViewRight}>
-                <Text style={styles.time}>{props.time}</Text>
-                <Text style={styles.unit}>{props.units}</Text>
+                <Text style={styles.time}>{time}</Text>
+                <Text style={styles.unit}>{units}</Text>
               </View>
             </View>
         );
@@ -27,11 +48,11 @@ export default function BinView(props) {
               </View>
               <View style={styles.binViewCenter}>
                 <Text style={styles.address}>{props.address}</Text>
-                <Text style={styles.distance}>{`${props.distance} Away`}</Text>
+                <Text style={styles.distance}>{`${props.distance} away`}</Text>
               </View>
               <View style={styles.binViewRight}>
-                <Text style={styles.time}>{props.time}</Text>
-                <Text style={styles.unit}>{props.units}</Text>
+                <Text style={styles.time}>{time}</Text>
+                <Text style={styles.unit}>{units}</Text>
               </View>
             </View>
         )
@@ -59,6 +80,7 @@ const styles = StyleSheet.create({
       binViewCenter: {
         height: "100%",
         width: "60%",
+        justifyContent: 'space-between',
         paddingTop: 5
       },
       binViewRight: {
@@ -91,7 +113,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
       },
       distance: {
-        paddingTop: "5%",
+        paddingBottom: "1.5%",
         fontFamily: "arial",
         color: "white",
         fontSize: 14,

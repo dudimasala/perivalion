@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
@@ -7,16 +7,35 @@ import * as Location from 'expo-location';
 import binAddresses from "./binAddresses";
 import BinView from "./BinView";
 import Geocoder from "react-native-geocoding";
+var axios = require("axios");
+var mongoose = require('mongoose');
 
 
-//make it so that it updates location as the user moves.
+//additional functionality: have red direction lines / make map expand according to the markers + add to the bin addresses list
 
 const {useRealm, useQuery, useObject} = TaskRealmContext;
 
+
 export const TaskManager = ({ tasks, userId }) => {
+
+  
   const realm = useRealm();
   
   const items = useQuery("Bin");
+  //for whether user wants to walk or drive
+  const [mode, setMode] = useState("walking");
+
+  //in case user denies permission
+  const [errorMsg, setErrorMsg] = useState(null);
+    
+  //to set the region of the map and also place the user's pin (triangulated around their location)
+  const [mapRegion, setmapRegion] = useState(null);
+  
+  const [closestFive, setClosestFive] = useState(null);
+
+  //to stop an infinite loop for finding the closest 5 bins
+  const [loaded, setLoaded] = useState(false);
+
 /*
   if(items.length !== 0) {
     realm.write(() => {
@@ -40,23 +59,58 @@ export const TaskManager = ({ tasks, userId }) => {
       .catch(error => console.warn(error));    
     }
   }
+  
+  const bins = useQuery("Bin");
 
 
-  const nItems = useQuery("Bin");
-  console.log(nItems);
-  //for whether user wants to walk or drive
-  const [walking, setWalking] = useState(true);
+      //determining the closest 5 recycling bins to the user:
+      //get the addresses of all the bins
+      //find the time from all the bins to the users location
+      //sort the findings
 
-  //in case user denies permission
-  const [errorMsg, setErrorMsg] = useState(null);
+  //The main algorithm
+  //Use axios to create a get request and pull from the gmaps distance matrix api
+  //from there we get several useful pieces of data: time + distance given some travelling method
+  //Use that to create a dictionary, -> find the five lowest time values and then store the bins, the time, and the distance of the closest 5
 
-  //to set the region of the map and also place the user's pin (triangulated around their location)
-  const [mapRegion, setmapRegion] = useState({
-      latitude: 37.78825,
-      longitude: -122.4324,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421
-  });
+  if(mapRegion !== null && loaded === false) {
+    let travelTimes = {};
+    let completeData = {};
+    for(let i = 0; i < bins.length; i++) {
+      var config = {
+        method: 'get',
+        url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${mapRegion.latitude}%2C${mapRegion.longitude}&destinations=${bins[i].lat}%2C${bins[i].lng}&mode=${mode}&units=imperial&key=AIzaSyALD0YncwoJ6nHW6MkL5J385Kr7s_RSfu4`,
+        headers: { }
+      };
+      
+      axios(config)
+      .then(function (response) {
+        travelTimes[bins[i]._id] = response.data.rows[0].elements[0].duration.value;
+        completeData[bins[i]._id] = response.data.rows[0].elements[0].distance.text;
+        const vals = Object.values(travelTimes)
+        if(vals.length === bins.length) {
+          let newVals = vals;
+          let keys = Object.keys(travelTimes);
+          let lowestIds = [];
+          for(let i = 0; i<5; i++) {
+            let index = newVals.indexOf(Math.min(...newVals));
+            lowestIds.push([keys[index], newVals[index], completeData[keys[index]]]);
+            newVals.splice(index, 1);
+            keys.splice(index, 1);
+          }  
+          setClosestFive(lowestIds);
+          setLoaded(true);
+        }
+      })
+      .catch(function (error) {
+        setErrorMsg("No Routes Found!");
+      });
+    }
+
+ 
+  }
+
+
 
 
   useEffect(() => {
@@ -71,19 +125,14 @@ export const TaskManager = ({ tasks, userId }) => {
      } else {
        //gets the users current position --> places a marker there later
        let location = await Location.getCurrentPositionAsync({});
+
        setmapRegion({
          latitude: location.coords.latitude,
          longitude: location.coords.longitude,
-         latitudeDelta: 0.0222,
-         longitudeDelta: 0.0221
-       })
-
-       //determining the closest 5 recycling bins to the user:
-       //get the addresses of all the bins
-       //find the time from all the bins to the users location
-       //sort the findings
-
-
+         latitudeDelta: 0.2222,
+         longitudeDelta: 0.2221
+       });
+       setLoaded(false);
 
      }
     
@@ -92,11 +141,55 @@ export const TaskManager = ({ tasks, userId }) => {
 
   //if the walk/drive button is pressed, to toggle the state accordingly
 
-  function toggleWalk() {
-    setWalking(!walking);
+  function toggleMode() {
+    mode === "walking" ? setMode("driving"):setMode("walking");
+    setLoaded(false);
+    setClosestFive(null);
   }
 
+  //to try again after an error
+  function tryAgain() {
+    setErrorMsg(null);
+  }
 
+//Some error/loading UIs
+  if(errorMsg !== null) {
+    return (
+      <View style={styles.content}>
+        <View style={styles.filler}>
+          <Text style={styles.error}>{errorMsg}</Text>
+          <Pressable style={styles.errButton} onPress={tryAgain}><Text style={styles.buttonText}>Try Again</Text></Pressable>
+        </View>
+      </View>
+    )
+  }
+  else if(mapRegion === null) {
+    return (
+      <View style={styles.content}>
+        <View style={styles.filler}>
+          <Text style={styles.loading}>Loading...</Text>
+        </View>
+      </View>
+    )
+    
+  }
+  else if(closestFive === null) {
+    return (
+      <View style={styles.content}>
+        <MapView
+          style={{ alignSelf: 'stretch', height: '50%' }}
+          region={mapRegion}
+        >
+        <Marker pinColor="green" coordinate={mapRegion} title='Your location'></Marker>
+        </MapView>
+        <ScrollView style={styles.bottomView}>
+          <Text style={styles.bottomLoading}>Loading...</Text>
+        </ScrollView>
+      </View>      
+    )
+  }
+  else {
+//The main UI
   return (
     <View style={styles.content}>
       <MapView
@@ -104,60 +197,70 @@ export const TaskManager = ({ tasks, userId }) => {
         region={mapRegion}
       >
         <Marker pinColor="green" coordinate={mapRegion} title='Your location'></Marker>
+        <Marker pinColor="red" coordinate={{latitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[0][0])).lat, longitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[0][0])).lng}} title={`${realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[0][0])).address}`}></Marker>
+        <Marker pinColor="red" coordinate={{latitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[1][0])).lat, longitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[1][0])).lng}} title={`${realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[1][0])).address}`}></Marker>
+        <Marker pinColor="red" coordinate={{latitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[2][0])).lat, longitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[2][0])).lng}} title={`${realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[2][0])).address}`}></Marker>
+        <Marker pinColor="red" coordinate={{latitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[3][0])).lat, longitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[3][0])).lng}} title={`${realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[3][0])).address}`}></Marker>
+        <Marker pinColor="red" coordinate={{latitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[4][0])).lat, longitude: realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[4][0])).lng}} title={`${realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[4][0])).address}`}></Marker>
       </MapView>
       <ScrollView style={styles.bottomView}>
         <View style={styles.buttonView}>
           {
-            walking ? 
-            <Pressable style={[styles.button, styles.selected]} onPress={toggleWalk}><Text style={styles.buttonText}>Walk</Text></Pressable>
+            mode === "walking" ? 
+            <Pressable style={[styles.button, styles.selected]} onPress={toggleMode}><Text style={styles.buttonText}>Walk</Text></Pressable>
             :
-            <Pressable style={[styles.button]} onPress={toggleWalk}><Text style={styles.buttonText}>Walk</Text></Pressable>
+            <Pressable style={[styles.button]} onPress={toggleMode}><Text style={styles.buttonText}>Walk</Text></Pressable>
           }
           {
-            walking ?
-            <Pressable style={styles.button} onPress={toggleWalk}><Text style={styles.buttonText}>Drive</Text></Pressable>
+            mode === "walking" ?
+            <Pressable style={styles.button} onPress={toggleMode}><Text style={styles.buttonText}>Drive</Text></Pressable>
             :
-            <Pressable style={[styles.button, styles.selected]} onPress={toggleWalk}><Text style={styles.buttonText}>Drive</Text></Pressable>
+            <Pressable style={[styles.button, styles.selected]} onPress={toggleMode}><Text style={styles.buttonText}>Drive</Text></Pressable>
           }
         </View>
         <View style={styles.descriptorView}><Text style={styles.descriptor}>The 5 Closest Bins To You:</Text></View>
         <BinView 
           blue={true} 
           rank={1} 
-          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
-          distance={"5km"}
+          address={realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[0][0])).address} 
+          distance={closestFive[0][2]}
+          seconds ={closestFive[0][1]}
           time={1}
           units={"min"}
         />
         <BinView 
           blue={false} 
           rank={2} 
-          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
-          distance={"10km"}
+          address={realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[1][0])).address} 
+          distance={closestFive[1][2]}
+          seconds={closestFive[1][1]}
           time={3}
           units={"mins"}
         />
         <BinView 
           blue={true} 
           rank={3} 
-          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
-          distance={"12km"}
+          address={realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[2][0])).address} 
+          distance={closestFive[2][2]}
+          seconds={closestFive[2][1]}
           time={5}
           units={"mins"}
         />
         <BinView 
           blue={false} 
           rank={4} 
-          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
-          distance={"15km"}
+          address={realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[3][0])).address}  
+          distance={closestFive[3][2]}
+          seconds={closestFive[3][1]}
           time={10}
           units={"mins"}
         />
         <BinView 
           blue={true} 
           rank={5} 
-          address={"Lung Lok House, Lower Wong Tai Sin (2) Estate, Wong Tai Sin"} 
-          distance={"20km"}
+          address={realm.objectForPrimaryKey("Bin", mongoose.Types.ObjectId(closestFive[4][0])).address} 
+          distance={closestFive[4][2]}
+          seconds={closestFive[4][1]}
           time={20}
           units={"mins"}        
         />
@@ -165,10 +268,36 @@ export const TaskManager = ({ tasks, userId }) => {
     </View>
   );
 };
+}
 
 const styles = StyleSheet.create({
   content: {
     flex: 1
+  },
+  filler: {
+    backgroundColor: "#0E152B",
+    height: "100%",
+  },
+  loading: {
+    color: "white",
+    textAlign: "center",
+    fontFamily: "arial",
+    fontSize: 30,
+    paddingTop: "85%"
+  },
+  bottomLoading: {
+    color: "white",
+    textAlign: "center",
+    fontFamily: "arial",
+    fontSize: 30,
+    paddingTop: "40%"
+  },
+  error: {
+    color: "red",
+    textAlign: "center",
+    fontFamily: "arial",
+    fontSize: 30,
+    paddingTop: "85%"    
   },
   bottomView: {
     backgroundColor: "#0E152B",
@@ -189,6 +318,20 @@ const styles = StyleSheet.create({
     paddingLeft: "1%",
     paddingRight: "1%",
     width: "50%",
+    textAlign: "center"
+  },
+  errButton: {
+    backgroundColor: "#25AA72",
+    borderColor: "black",
+    borderWidth: 1,
+    borderRadius: 10,
+    marginLeft: "30%",
+    marginTop: "5%",
+    paddingTop: "2%",
+    paddingBottom: "2%",
+    paddingLeft: "1%",
+    paddingRight: "1%",
+    width: "40%",
     textAlign: "center"
   },
   buttonText: {
