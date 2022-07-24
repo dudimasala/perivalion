@@ -10,6 +10,7 @@
     "@react-google-maps/api": "^2.12.1",
     "@realm/react": "^0.3.1",
     "axios": "^0.27.2",
+    "check-if-word": "^1.2.1",
     "dotenv": "^16.0.1",
     "expo": "^44.0.6",
     "expo-dev-client": "~0.8.4",
@@ -30,7 +31,8 @@
     "react-native-modal": "^13.0.1",
     "react-native-vector-icons": "^9.2.0",
     "react-native-web": "0.17.1",
-    "realm": "^10.19.0"
+    "realm": "^10.19.0",
+    "word2vec": "^1.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

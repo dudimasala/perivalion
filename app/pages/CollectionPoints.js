@@ -9,7 +9,6 @@ import BinView from "../components/BinView";
 import Geocoder from "react-native-geocoding";
 var axios = require("axios");
 var mongoose = require('mongoose');
-
 //now includes recycling collection points in Hong Kong
 
 //for the private API key

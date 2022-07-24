@@ -19,10 +19,6 @@ import * as WebBrowser from 'expo-web-browser';
 import { TaskRealmContext } from "../models";
 import i_m_pairs from "../components/itemMaterials";
 
-
-
-
-
 const {useRealm, useQuery } = TaskRealmContext;
 
 const windowWidth = Dimensions.get('window').width;
@@ -175,6 +171,20 @@ const Home = (props) => {
     const changeFeedbackSelected = () => {
         setFeedbackSelected(!feedbackSelected)
     }
+    
+    //when the user presses the search button -> we check if input is in our db
+    //If not we use word2vec to guess what material the item is
+
+    const search = () => {
+        let item = realm.objectForPrimaryKey("Item", userInput.toLowerCase());
+        if(item) {
+            let itemName = userInput.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+            setSelectedItem({name: itemName, type: item.materials.join("/")})
+            setModalVisible(true);
+        } else {
+            console.log('hehe')
+        }
+    }
 
     //update db with the submitted feedback. If item exists, we update db else we create a new item in db.
     const submitFeedbackSelected = () => {
@@ -214,9 +224,10 @@ const Home = (props) => {
             </View>
             <SearchBar
                 placeholder="Your item"
-                onPress={() => alert("onPress")}
                 value={userInput}
                 onChangeText={(text) => changeText(text)}
+                onClearPress={() => changeText("")}
+                onSearchPress={() => search()}
             />
 
             <View style={styles.menu}>
