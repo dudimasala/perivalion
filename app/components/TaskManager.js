@@ -10,14 +10,16 @@ import Geocoder from "react-native-geocoding";
 var axios = require("axios");
 var mongoose = require('mongoose');
 
+//for the private API key
+import environmentalVariables from "../../env";
+
 
 //additional functionality: have red direction lines / make map expand according to the markers + add to the bin addresses list
 
-const {useRealm, useQuery, useObject} = TaskRealmContext;
+const {useRealm, useQuery } = TaskRealmContext;
 
 
 export const TaskManager = ({ tasks, userId }) => {
-
   
   const realm = useRealm();
   
@@ -47,7 +49,7 @@ export const TaskManager = ({ tasks, userId }) => {
   //gets coordinates of all addresses using geocoder (Google API)
   //Then adds address + coords to our database
   if(items.length === 0) {
-    Geocoder.init("AIzaSyALD0YncwoJ6nHW6MkL5J385Kr7s_RSfu4");
+    Geocoder.init(environmentalVariables.GOOGLE_API_KEY);
     for(let i = 0; i < binAddresses.length; i++) {
       Geocoder.from(binAddresses[i])
       .then(json => {
@@ -79,7 +81,7 @@ export const TaskManager = ({ tasks, userId }) => {
     for(let i = 0; i < bins.length; i++) {
       var config = {
         method: 'get',
-        url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${mapRegion.latitude}%2C${mapRegion.longitude}&destinations=${bins[i].lat}%2C${bins[i].lng}&mode=${mode}&units=imperial&key=AIzaSyALD0YncwoJ6nHW6MkL5J385Kr7s_RSfu4`,
+        url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${mapRegion.latitude}%2C${mapRegion.longitude}&destinations=${bins[i].lat}%2C${bins[i].lng}&mode=${mode}&units=imperial&key=${environmentalVariables.GOOGLE_API_KEY}`,
         headers: { }
       };
       
