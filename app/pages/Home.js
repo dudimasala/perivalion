@@ -18,6 +18,8 @@ import PerivalionLogo from '../../assets/PerivalionLOGO.png'
 import * as WebBrowser from 'expo-web-browser';
 import { TaskRealmContext } from "../models";
 import i_m_pairs from "../components/itemMaterials";
+var axios = require("axios");
+
 
 
 const {useRealm, useQuery } = TaskRealmContext;
@@ -172,14 +174,6 @@ const Home = (props) => {
     const changeFeedbackSelected = () => {
         setFeedbackSelected(!feedbackSelected)
     }
-
-    function dummyAsync() {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve('resolved');
-          }, 2000);
-        });
-    }
     
     //when the user presses the search button -> we check if input is in our db
     //If not we use word2vec to guess what material the item is
@@ -191,12 +185,53 @@ const Home = (props) => {
             setSelectedItem({name: itemName, type: item.materials.join("/")})
             setModalVisible(true);
         } else {
-            setSelectedItem({name: "Guitar Strings", type: "loading..."});
+            let itemName = userInput.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+            setSelectedItem({name: itemName, type: "loading..."})
             setModalVisible(true);
-            const result = await dummyAsync();
-            if(userInput.toLowerCase() === "guitar strings") {
-                setSelectedItem({name: "Guitar Strings", type: "plastic"});
+            //found on server.js which has access to the 'check-word' module (check if input is meaningful)
+            //also has word2vec for our AI to make educated guesses based on word contexts
+            var config = {
+                method: 'get',
+                url: `http://localhost:5000`,
+                headers: { input: userInput, databaseitems: newItems }
             }
+            axios(config)
+              .then(function(response) {
+                  if(response.data === "invalid input") {
+                    setSelectedItem({name: itemName, type: "Indeterminate"})
+                  } else if(response.data.length === 5) {
+                      //0:metal, 1:plastic, 2:non-recyclable, 3:paper, 4:food, 5:glass, 6:clothing, 7:rubber, 8:wood, 9: recycling center
+                      let possibleMaterials = [0,0,0,0,0,0,0,0,0,0];
+                      let nMaterials = ["metal", "plastic", "non-recyclable", "paper", "food", "glass", "clothing", "rubber", "wood", "recycling center"]
+                      //weighted average algorithm given top 5 closest items to the inputted one
+                      for(let i = 0; i<response.data.length; i++) {
+                        let weight = 1 - (i*0.1);
+                        let requiredMaterials = realm.objectForPrimaryKey("Item", response.data[i].toLowerCase()).materials;
+                        for(let i = 0; i<requiredMaterials.length; i++) {
+                            if(nMaterials.includes(requiredMaterials[i])) {
+                                let index = nMaterials.indexOf(requiredMaterials[i]);
+                                possibleMaterials[index] += (weight/requiredMaterials.length)
+                            }
+                        }
+                      }
+                      const max = Math.max(...possibleMaterials);
+                      const maxIndex = possibleMaterials.indexOf(max);
+                      const maxItem = nMaterials[maxIndex];
+                      //maxItem is the most likely material according to our algorithm
+                      //update DB too for the new item (continual improvement)
+                      realm.write(() => {
+                        realm.create("Item", {item: userInput.toLowerCase(), materials: [maxItem]});
+                      })
+                      setSelectedItem({name: itemName, type: maxItem})  
+
+                  } else {
+                    setSelectedItem({name: itemName, type: "Indeterminate"})                      
+                  }
+              })
+              .catch(function(error) {
+                 console.log(error);
+                 setSelectedItem({name: itemName, type: "Indeterminate"})    
+              })
         }
     }
 

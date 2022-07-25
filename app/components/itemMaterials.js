@@ -1,4 +1,4 @@
-//metal, paper, glass, plastic, non-recyclable, clothing, food
+//metal, plastic, non-recyclable, paper, food, glass, recycling center, clothing, rubber, wood
 //Item material pairs
 let i_m_pairs = {
   "coca cola can": ["metal"],
@@ -93,7 +93,7 @@ let i_m_pairs = {
   "furniture": ["metal", "plastic", "wood"],
   "bottle": ["metal", "glass"],
   "jar": ['glass'],
-  "glove": ["latex"],
+  "glove": ["rubber"],
   "greaseproof paper": ["paper"],
   "hair": ["non-recyclable"],
   "hat": ["clothing"],

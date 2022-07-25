@@ -14,8 +14,6 @@ var mongoose = require('mongoose');
 import environmentalVariables from "../../env";
 
 
-//additional functionality: have red direction lines / make map expand according to the markers + add to the bin addresses list
-
 const {useRealm, useQuery } = TaskRealmContext;
 
 
@@ -68,7 +66,6 @@ export const CollectionPoints = ({ tasks, userId }) => {
   
   
   const bins = useQuery("Bin");
-  console.log(bins.length);
 
       //determining the closest 5 recycling bins to the user:
       //get the addresses of all the bins

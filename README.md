@@ -1,3 +1,4 @@
+Also note that you have to run 'npm run begin' on a separate terminal to boot up our API
 # Expo Template Realm JavaScript
 <p>
   <!-- iOS -->
