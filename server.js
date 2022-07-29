@@ -17,18 +17,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-/*
-word2Vec_wordList.decompress(() => {
-  let v1 = Array.from(word2Vec_wordList.getWord("book"))
-  let v2 = Array.from(word2Vec_wordList.getWord("orange"))
-  let v3 = Array.from(word2Vec_wordList.getWord("beans"))
-  let v4 = Array.from(word2Vec_wordList.getWord("banana"))
-  let v5 = Array.from(word2Vec_wordList.getWord("bag"))
-  console.log(distance(v3, v4));
-
-});
-*/
-
 
 app.get('/', (req, res) => {
     if(!req.headers.input) {
@@ -48,13 +36,16 @@ app.get('/', (req, res) => {
 
     let dbItems = req.headers.databaseitems.split(",");
     // Load the model.
+    if(dbItems.includes(userInput[userInput.length-1])) {
+      res.send([userInput[userInput.length-1]]);
+      return
+    }
 
     word2Vec_wordList.decompress(() => {
       let scores = [];
-      let inputVector = word2Vec_wordList.getWord(userInput[0]);
+      let inputVector = word2Vec_wordList.getWord(userInput[userInput.length-1]);
 
       if(!inputVector) {
-        console.log('invalid');
         res.send("invalid input");
         return
       }
@@ -78,21 +69,18 @@ app.get('/', (req, res) => {
       }
       let closestItems = [];
       //getting the top 5 scores (top 5 closest words)
-      for(let i=0; i<5; i++) {
+      for(let i=0; i<10; i++) {
         let index = scores.indexOf(Math.min(...scores));
         closestItems.push(dbItems[index]);
         scores.splice(index, 1);
         dbItems.splice(index, 1);
       }
-      console.log(closestItems);
       res.send(closestItems);
       return
     });
     /*
-
     res.send(closestItems);
     */
 })
 
 app.listen(5000);
-

@@ -43,7 +43,8 @@ const Home = (props) => {
     })
   }
   console.log(items);
-*/
+  */
+
 
     if(items.length === 0) {
         realm.write(() => {
@@ -199,7 +200,15 @@ const Home = (props) => {
               .then(function(response) {
                   if(response.data === "invalid input") {
                     setSelectedItem({name: itemName, type: "Indeterminate"})
-                  } else if(response.data.length === 5) {
+                  } else if(response.data.length === 1) {
+                    let requiredMaterials = realm.objectForPrimaryKey("Item", response.data[0].toLowerCase()).materials;
+                    realm.write(() => {
+                        realm.create("Item", {item: userInput.toLowerCase(), materials: requiredMaterials});
+                    })
+                    let output = requiredMaterials.join(", ");
+                    setSelectedItem({name: itemName, type: output})  
+
+                  } else if(response.data.length === 10) {
                       //0:metal, 1:plastic, 2:non-recyclable, 3:paper, 4:food, 5:glass, 6:clothing, 7:rubber, 8:wood, 9: recycling center
                       let possibleMaterials = [0,0,0,0,0,0,0,0,0,0];
                       let nMaterials = ["metal", "plastic", "non-recyclable", "paper", "food", "glass", "clothing", "rubber", "wood", "recycling center"]
@@ -214,15 +223,24 @@ const Home = (props) => {
                             }
                         }
                       }
+                      possibleMaterials.forEach((element, index) => {
+                        possibleMaterials[index] = Math.round(element*10)/10;
+                      });
                       const max = Math.max(...possibleMaterials);
-                      const maxIndex = possibleMaterials.indexOf(max);
-                      const maxItem = nMaterials[maxIndex];
+                      //find index of this 'max' and then put it down
+                      const maxItems = []
+                      for (let index = 0; index < possibleMaterials.length; index++) {
+                        if (possibleMaterials[index] === max) {
+                          maxItems.push(nMaterials[index]);
+                        }
+                      }
                       //maxItem is the most likely material according to our algorithm
                       //update DB too for the new item (continual improvement)
                       realm.write(() => {
-                        realm.create("Item", {item: userInput.toLowerCase(), materials: [maxItem]});
+                        realm.create("Item", {item: userInput.toLowerCase(), materials: maxItems});
                       })
-                      setSelectedItem({name: itemName, type: maxItem})  
+                      let output = maxItems.join(", ");
+                      setSelectedItem({name: itemName, type: output})  
 
                   } else {
                     setSelectedItem({name: itemName, type: "Indeterminate"})                      
