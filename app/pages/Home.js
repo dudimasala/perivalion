@@ -39,7 +39,7 @@ const Home = (props) => {
 /*
   if(items.length !== 0) {
     realm.write(() => {
-      realm.deleteAll();
+      realm.delete(realm.objects("Item"));
     })
   }
   console.log(items);
@@ -52,7 +52,7 @@ const Home = (props) => {
             }
         })
     }
-    
+
     const newIms = useQuery("Item");
     const newItems = []; 
 
